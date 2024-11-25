@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AD14096A2CEFEEF90072B6E8 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = AD1409692CEFEEF90072B6E8 /* FirebaseStorage */; };
+		AD74FF1B2CD86DD600FF6586 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = AD74FF1A2CD86DD600FF6586 /* GoogleSignInSwift */; };
 		ADB6C58C2CD6A863008354FA /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = ADB6C58B2CD6A863008354FA /* GoogleSignIn */; };
 		ADB6C58F2CD6A8CA008354FA /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = ADB6C58E2CD6A8CA008354FA /* FirebaseAuth */; };
 		ADB6C5912CD6A8CA008354FA /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = ADB6C5902CD6A8CA008354FA /* FirebaseDatabase */; };
@@ -16,9 +18,22 @@
 		AD7D88412CD2EEC40036681D /* Capsule.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Capsule.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		AD74FF182CD86A2600FF6586 /* Exceptions for "Capsule" folder in "Capsule" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = AD7D88402CD2EEC40036681D /* Capsule */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		AD7D88432CD2EEC40036681D /* Capsule */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AD74FF182CD86A2600FF6586 /* Exceptions for "Capsule" folder in "Capsule" target */,
+			);
 			path = Capsule;
 			sourceTree = "<group>";
 		};
@@ -32,16 +47,26 @@
 				ADB6C5912CD6A8CA008354FA /* FirebaseDatabase in Frameworks */,
 				ADB6C58C2CD6A863008354FA /* GoogleSignIn in Frameworks */,
 				ADB6C58F2CD6A8CA008354FA /* FirebaseAuth in Frameworks */,
+				AD14096A2CEFEEF90072B6E8 /* FirebaseStorage in Frameworks */,
+				AD74FF1B2CD86DD600FF6586 /* GoogleSignInSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		AD1409682CEFEEF90072B6E8 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		AD7D88382CD2EEC40036681D = {
 			isa = PBXGroup;
 			children = (
 				AD7D88432CD2EEC40036681D /* Capsule */,
+				AD1409682CEFEEF90072B6E8 /* Frameworks */,
 				AD7D88422CD2EEC40036681D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -77,6 +102,8 @@
 				ADB6C58B2CD6A863008354FA /* GoogleSignIn */,
 				ADB6C58E2CD6A8CA008354FA /* FirebaseAuth */,
 				ADB6C5902CD6A8CA008354FA /* FirebaseDatabase */,
+				AD74FF1A2CD86DD600FF6586 /* GoogleSignInSwift */,
+				AD1409692CEFEEF90072B6E8 /* FirebaseStorage */,
 			);
 			productName = Capsule;
 			productReference = AD7D88412CD2EEC40036681D /* Capsule.app */;
@@ -90,7 +117,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1600;
-				LastUpgradeCheck = 1600;
+				LastUpgradeCheck = 1610;
 				TargetAttributes = {
 					AD7D88402CD2EEC40036681D = {
 						CreatedOnToolsVersion = 16.0;
@@ -147,6 +174,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -211,6 +239,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -268,17 +297,22 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Capsule/Capsule.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Capsule/Preview Content\"";
 				DEVELOPMENT_TEAM = HAC7HSBS8D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Capsule/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Need the use of camera to add image to capsule";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Need of your location to connect with people close to you";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -301,17 +335,22 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Capsule/Capsule.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Capsule/Preview Content\"";
 				DEVELOPMENT_TEAM = HAC7HSBS8D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Capsule/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Need the use of camera to add image to capsule";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Need of your location to connect with people close to you";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -372,6 +411,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		AD1409692CEFEEF90072B6E8 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = ADB6C58D2CD6A8CA008354FA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+		AD74FF1A2CD86DD600FF6586 /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = ADB6C58A2CD6A863008354FA /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
+		};
 		ADB6C58B2CD6A863008354FA /* GoogleSignIn */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = ADB6C58A2CD6A863008354FA /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;

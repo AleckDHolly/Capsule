@@ -27,12 +27,8 @@ struct CapsuleApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .modelContainer(for: Capsule.self)
                 .preferredColorScheme(isDarkMode ? .dark : .light)
                 .environment(notificationManager)
-                .task {
-                    await notificationManager.requestPermission()
-                }
         }
     }
 }

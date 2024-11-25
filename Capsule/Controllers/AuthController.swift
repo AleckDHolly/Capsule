@@ -9,34 +9,98 @@ import Foundation
 import FirebaseAuth
 import GoogleSignIn
 import FirebaseCore
+import AuthenticationServices
+import CryptoKit
+import SwiftUI
+import FirebaseDatabaseInternal
 
 @Observable
-class AuthViewController {
-    var isLoggedIn: Bool = false
+class AuthController {
     var alertMessage: String = ""
     var showAlert: Bool = false
+    var currentNonce: String?
+    var user: User?
+    var users: [FirebaseUser] = []
+    let databaseRef = Database.database().reference()
     
     private var authListener: AuthStateDidChangeListenerHandle?
     
-    static let shared = AuthViewController()
+    static let shared = AuthController()
     
     init() {
         checkAuthStatus()
     }
     
     func checkAuthStatus() {
-        authListener = Auth.auth().addStateDidChangeListener { auth, user in
-            if Auth.auth().currentUser != nil {
-                print("User is logged in.")
-                self.isLoggedIn = true
-            } else {
-                print("User is not logged in")
-                self.isLoggedIn = false
+        @AppStorage("hasLaunchedBefore") var hasLaunchedBefore: Bool = false
+        
+        if !hasLaunchedBefore {
+            do {
+                try Auth.auth().signOut()
+                hasLaunchedBefore = true
+            } catch let signOutError as NSError {
+                print("Error signing out: \(signOutError.localizedDescription)")
             }
+        }
+        
+        authListener = Auth.auth().addStateDidChangeListener { auth, user in
+            self.user = user
         }
     }
     
+    func addUser(user: User?) {
+        let locManager = LocationManager.shared
+        
+        //Recuperer le location a partir du service
+        guard let location = locManager.location else {
+            return
+        }
+        
+        guard let userID = user?.uid else {
+            return
+        }
+        
+        let db = databaseRef.child(userID)
+        
+        let images: [String] = [
+            "person","person.fill","person.crop.circle","person.circle","person.circle.fill","person.crop.rectangle","person.crop.square"
+        ]
+        
+        let userExists = users.contains { $0.id == userID }
+        
+        if !userExists {
+            db.setValue(["id": userID, "name": self.user?.displayName ?? "User", "avatar": images.randomElement() ?? "person", "latitude": location.latitude, "longitude": location.longitude])
+        }
+    }
     
+    func fetchUsers(){
+        databaseRef.observe(.value) { snapshot in
+            var newUsers: [FirebaseUser] = []
+            for child in snapshot.children {
+                if let childSnapshot = child as? DataSnapshot,
+                   let valueDict = childSnapshot.value as? [String: Any],
+                   let id = valueDict["id"] as? String,
+                   let name = valueDict["name"] as? String,
+                   let avatar = valueDict["avatar"] as? String,
+                   let latitude = valueDict["latitude"] as? Double,
+                   let longitude = valueDict["longitude"] as? Double {
+                    
+                    let user = FirebaseUser(
+                        id: id,
+                        name: name,
+                        avatar: avatar,
+                        latitude: latitude,
+                        longitude: longitude
+                    )
+                    newUsers.append(user)
+                }
+            }
+            self.users = newUsers
+            print(self.users)
+        }
+    }
+    
+    //MARK: Regular sign in and sign up
     func signUp(firstName: String, email: String, password: String, confirmPassword: String) {
         // Check if any field is empty
         guard !firstName.isEmpty else {
@@ -84,7 +148,8 @@ class AuthViewController {
             } else {
                 print("User created successfully")
                 
-                // Set the display name (first name) for the user
+                self.user?.displayName = firstName
+                self.addUser(user: self.user)
                 let changeRequest = Auth.auth().currentUser?.createProfileChangeRequest()
                 changeRequest?.displayName = firstName
                 changeRequest?.commitChanges { error in
@@ -109,10 +174,12 @@ class AuthViewController {
                 self.showAlert = true
             } else {
                 print("User signed in successfully")
+                self.addUser(user: self.user)
             }
         }
     }
     
+    //MARK: Sign IN and UP W/ Google
     func signInWithGoogle() {
         guard let clientID = FirebaseApp.app()?.options.clientID else { return }
         
@@ -138,7 +205,7 @@ class AuthViewController {
                 print("No user information returned from Google Sign-In")
                 return
             }
-        
+            
             // Access user information, e.g., name, email
             print("User signed in: \(user.user.profile?.name ?? "User")")
             
@@ -160,12 +227,108 @@ class AuthViewController {
                     return
                 }
                 
-                // User is signed in to Firebase
+                self.user?.displayName = user.user.profile?.givenName
                 print("User signed in with Firebase: \(user.user.profile?.name ?? "User")")
+                self.addUser(user: self.user)
             }
         }
     }
     
+    //MARK: Sign in with Apple
+    func randomNonceString(length: Int = 32) -> String {
+        precondition(length > 0)
+        var randomBytes = [UInt8](repeating: 0, count: length)
+        let errorCode = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
+        if errorCode != errSecSuccess {
+            fatalError(
+                "Unable to generate nonce. SecRandomCopyBytes failed with OSStatus \(errorCode)"
+            )
+        }
+        
+        let charset: [Character] =
+        Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+        
+        let nonce = randomBytes.map { byte in
+            // Pick a random character from the set, wrapping around if needed.
+            charset[Int(byte) % charset.count]
+        }
+        
+        return String(nonce)
+    }
+    
+    func sha256(_ input: String) -> String {
+        let inputData = Data(input.utf8)
+        let hashedData = SHA256.hash(data: inputData)
+        let hashString = hashedData.compactMap {
+            String(format: "%02x", $0)
+        }.joined()
+        
+        return hashString
+    }
+    
+    func handleRequest(_ request: ASAuthorizationAppleIDRequest) {
+        request.requestedScopes = [.email, .fullName]
+        let nonce = randomNonceString()
+        currentNonce = nonce
+        request.nonce = sha256(nonce)
+    }
+    
+    func handleSuccessfulLogin(_ authorization: ASAuthorization) {
+        if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
+            guard let nonce = currentNonce else {
+                print("Invalid state: A login callback was received, but no login request was sent.")
+                return
+            }
+            guard let appleIDToken = appleIDCredential.identityToken else {
+                print("Unable to fetch identity token")
+                return
+            }
+            guard let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
+                print("Unable to serialize token string from data: \(appleIDToken.debugDescription)")
+                return
+            }
+            
+            // Initialize a Firebase credential, including the user's full name.
+            let credential = OAuthProvider.appleCredential(withIDToken: idTokenString,
+                                                           rawNonce: nonce,
+                                                           fullName: appleIDCredential.fullName)
+            
+            // Sign in with Firebase.
+            Auth.auth().signIn(with: credential) { (authResult, error) in
+                if let error = error {
+                    self.alertMessage = error.localizedDescription
+                    return
+                }
+                
+                // Update the local user variable with the signed-in user
+                self.user = authResult?.user
+                self.addUser(user: self.user)
+                
+                // Extract full name from Apple credentials
+                if let fullName = appleIDCredential.fullName {
+                    let displayName = [fullName.givenName]
+                        .compactMap { $0 } // Filter out any nil values
+                        .joined(separator: " ") // Join names with a space
+                    
+                    let changeRequest = self.user?.createProfileChangeRequest()
+                    changeRequest?.displayName = displayName
+                    changeRequest?.commitChanges { error in
+                        if let error = error {
+                            print("Failed to update display name: \(error.localizedDescription)")
+                        } else {
+                            print("Display name successfully updated to \(displayName)")
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    func handleLoginError(with error: Error) {
+        print("Could not authenticate: \\(error.localizedDescription)")
+    }
+    
+    //MARK: SIGN OUT
     func signOut() {
         do {
             try Auth.auth().signOut()

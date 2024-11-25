@@ -8,57 +8,111 @@
 import SwiftUI
 import NaturalLanguage
 import SwiftData
+import FirebaseAuth
 
 struct CreerCapsuleView: View {
     @State private var textEditor: String = ""
     @State var sentiment: String = String(localized: "inconnu-string")
     @State private var date: Date = Date.now
-    @State private var capsule: Capsule?
-    @Environment(\.modelContext) private var modelContext
     @FocusState private var focusedField: Field?
+    private let dbController = DbController.shared
+    private let notificationManager = NotificationManager.shared
+    private let authController = AuthController.shared
+    @State private var image: UIImage?
+    @State private var showCamera: Bool = false
+    @State private var showGallery: Bool = false
     
     enum Field: Hashable {
         case textEdit
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Text("Ecrire un message pour votre futur vous.")
-                .font(.title2)
-                .italic()
-            
-            TextEditor(text: $textEditor)
-                .focused($focusedField, equals: .textEdit)
-                .autocorrectionDisabled(true)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 7)
-                        .stroke(.secondary, lineWidth: 2)
-                )
-            
-            Text("Sentiment Detecte: \(sentiment)")
-                .onChange(of: textEditor) {
-                    analyserSentiment()
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 20) {
+                    Text("Ecrire un message pour votre futur vous.")
+                        .font(.title2)
+                        .italic()
+                    
+                    TextEditor(text: $textEditor)
+                        .focused($focusedField, equals: .textEdit)
+                        .autocorrectionDisabled(true)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 7)
+                                .stroke(.secondary, lineWidth: 2)
+                        )
+                        .frame(height: 400)
+                    
+                    if let image {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(height: 200)
+                            .frame(maxWidth: .infinity)
+                            .cornerRadius(10)
+                            .padding()
+                    }
+                    
+                    Text("Sentiment Detecte: \(sentiment)")
+                        .onChange(of: textEditor) {
+                            analyserSentiment()
+                        }
+                    
+                    
+                    DatePicker("Date d'ouverture:", selection: $date)
+                    
+                    
+                    HStack(spacing: 1) {
+                        Button {
+                            showCamera = true
+                        } label: {
+                            Text("Prendre une photo")
+                                .foregroundStyle(Color("backgroundColor"))
+                                .padding()
+                                .background(.blue)
+                                .cornerRadius(10)
+                        }
+                        
+                        Spacer()
+                        
+                        Button {
+                            showGallery = true
+                        } label: {
+                            Text("Choisir une photo")
+                                .foregroundStyle(Color("backgroundColor"))
+                                .padding()
+                                .background(.blue)
+                                .cornerRadius(10)
+                        }
+                    }
                 }
-                
-            
-            DatePicker("Date d'ouverture:", selection: $date)
-            
-            
-            Button {
-                modelContext.insert(Capsule(message: textEditor, dateOuverture: date.formatted(.dateTime.month().day().year()), estOuverte: false))
-                textEditor = ""
-                sentiment = ""
-            } label: {
-                Text("Enregistrer la capsule")
-                    .foregroundStyle(.background)
-                    .padding()
-                    .background(.blue)
-                    .cornerRadius(10)
             }
-        }
-        .padding()
-        .onTapGesture {
-            focusedField = nil
+            .padding()
+            .sheet(isPresented: $showCamera) {
+                CameraView(capturedImage: $image)
+            }
+            .sheet(isPresented: $showGallery) {
+                ImagePicker(selectedImage: $image)
+            }
+            .onTapGesture {
+                focusedField = nil
+            }
+            .toolbar {
+                ToolbarItem {
+                    Button {
+                        let dateFormatter = DateFormatter()
+                        dateFormatter.dateFormat = "MMM. d yyyy 'at' h:mm a"
+                        let formattedDate = dateFormatter.string(from: date)
+                        
+                        // Add the item to the database with the formatted date
+                        dbController.addItem(message: textEditor, dateOuverture: formattedDate, estOuverte: false, read: false, image: image)
+                        textEditor = ""
+                        image = nil
+                    } label: {
+                        Text("Add Capsule")
+                    }
+                }
+            }
         }
     }
     
@@ -77,7 +131,7 @@ struct CreerCapsuleView: View {
                 sentiment = String(localized: "neutre-string")
             }
         } else {
-            sentiment = String(localized: "inconnu-string") 
+            sentiment = String(localized: "inconnu-string")
         }
     }
 }

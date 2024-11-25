@@ -8,35 +8,22 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selectedTab: Int = 0
-    private var notificationManager = NotificationManager.shared
+    private var authController = AuthController.shared
+    private let notificationManager = NotificationManager.shared
+    private var locationManger = LocationManager.shared
     
     var body: some View {
-        TabView(selection: $selectedTab) {
-            CreerCapsuleView()
-                .tabItem {
-                    Label("Create", systemImage: "plus.circle.fill")
-                }
-                .tag(0)
-            
-            MesCapsulesView()
-                .tabItem {
-                    Label("My capsules", systemImage: "clock.fill")
-                }
-                .tag(1)
-            
-            SettingsView()
-                .tabItem {
-                    Label("Settings", systemImage: "gear")
-                }
-                .tag(2)
-        }
-        .onAppear {
-            notificationManager.cancelNotification()
-        }
-        .onDisappear {
-            if notificationManager.permissionGranted {
-                notificationManager.scheduleNotification()
+        Group {
+            if authController.user != nil {
+                PagePrincipale()
+                    .task {
+                        await notificationManager.requestPermission()
+                    }
+                    .onAppear {
+                        print(authController.users)
+                    }
+            } else {
+                SignUpView()
             }
         }
     }
@@ -44,5 +31,4 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: Capsule.self)
 }

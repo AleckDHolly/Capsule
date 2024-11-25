@@ -9,26 +9,57 @@ import SwiftUI
 
 struct SingleCapsule: View {
     var capsule: Capsule
+    private let dbController = DbController.shared
     
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            Text(capsule.message)
+            if let message = capsule.message {
+                Text(message)
+            }
+            
+            if let imageURL = capsule.uploadedImage {
+                AsyncImage(url: imageURL) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView("Loading...")
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 200)
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 350, height: 350)
+                            .cornerRadius(10)
+                            .padding()
+                            .clipped()
+                    case .failure(_):
+                        Image(systemName: "photo.on.rectangle")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 350, height: 350)
+                            .padding()
+                            .clipped()
+                    @unknown default:
+                        EmptyView()
+                    }
+                }
+            }
             
             Button {
-                
+                dbController.markAsRead(capsule: capsule)
             } label: {
-                Text("Marquer comme lu")
+                Text(capsule.read ? "Marquer comme non lu" : "Marquer comme lu")
             }
         }
         .navigationTitle("Details de la capsule")
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .onAppear {
-            capsule.estOuverte = true
+            dbController.markAsOpened(capsule: capsule)
         }
         .padding()
     }
 }
 
-#Preview {
-    SingleCapsule(capsule: Capsule(message: "", dateOuverture: "", estOuverte: false))
-}
+//#Preview {
+//    SingleCapsule(capsule: Capsule(id: "1", message: "", dateOuverture: "", estOuverte: false, read: false, canOpen: false, creator: ""))
+//}
