@@ -32,6 +32,7 @@ struct MapView: View {
                         }
                     }
                 }
+                .ignoresSafeArea()
                 
                 List(authController.users) { user in
                     NavigationLink(destination: UserDetailView(user: user)){

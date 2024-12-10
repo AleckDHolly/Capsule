@@ -100,14 +100,17 @@ struct CreerCapsuleView: View {
             .toolbar {
                 ToolbarItem {
                     Button {
-                        let dateFormatter = DateFormatter()
-                        dateFormatter.dateFormat = "MMM. d yyyy 'at' h:mm a"
-                        let formattedDate = dateFormatter.string(from: date)
                         
-                        // Add the item to the database with the formatted date
-                        dbController.addItem(message: textEditor, dateOuverture: formattedDate, estOuverte: false, read: false, image: image)
-                        textEditor = ""
-                        image = nil
+                        if image != nil || !textEditor.isEmpty {
+                            let dateFormatter = DateFormatter()
+                            dateFormatter.dateFormat = "MMM. d yyyy 'at' h:mm a"
+                            let formattedDate = dateFormatter.string(from: date)
+                            
+                            // Add the item to the database with the formatted date
+                            dbController.addItem(message: textEditor, dateOuverture: formattedDate, estOuverte: false, read: false, image: image)
+                            textEditor = ""
+                            image = nil
+                        }
                     } label: {
                         Text("Add Capsule")
                     }

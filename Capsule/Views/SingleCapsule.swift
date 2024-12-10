@@ -25,13 +25,17 @@ struct SingleCapsule: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 200)
                     case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFit()
+                        Rectangle()
+                            .opacity(0)
+                            .overlay {
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                            }
                             .frame(width: 350, height: 350)
                             .cornerRadius(10)
-                            .padding()
                             .clipped()
+                            .padding()
                     case .failure(_):
                         Image(systemName: "photo.on.rectangle")
                             .resizable()

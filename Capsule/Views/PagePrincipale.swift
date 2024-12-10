@@ -70,7 +70,7 @@ struct PagePrincipale: View {
         case .inactive:
             if notificationManager.permissionGranted {
                 showNotification()
-                notificationManager.scheduleNotificationAfterAWhile(days: 7)
+                notificationManager.scheduleNotificationAfterAWhile(days: 5)
             }
             return
         default:
