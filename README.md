@@ -1,5 +1,7 @@
 # A capsule app where you write a message, to future you, then you can share this capsule but you and the person with which you shared the capsule with can only open it when the date of the capsule's opening has passed.
 
+Video link: https://youtube.com/shorts/1U_nZP7s87I?feature=share
+
 ## Capabilities:
 
 -Create a capsule
